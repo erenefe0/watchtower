@@ -13,7 +13,7 @@
     {
       "binding": "DB",
       "database_name": "watchtower-db",
-      "database_id": "00000000-0000-4000-8000-000000000000",
+      "database_id": "1fc5ac53-7f44-42e9-8271-a8d4705bd83d",
       "migrations_dir": "drizzle"
     }
   ],
