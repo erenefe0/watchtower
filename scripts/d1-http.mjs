@@ -6,7 +6,7 @@ export function createD1({ accountId, databaseId, token, request = fetch }) {
     const response = await request(`https://api.cloudflare.com/client/v4/accounts/${accountId}/d1/database/${databaseId}/query`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify(statements.map(s => ({ sql: s.sql, params: s.params }))),
+      body: JSON.stringify({ batch: statements.map(s => ({ sql: s.sql, params: s.params })) }),
       signal: AbortSignal.timeout(30000),
     });
     if (!response.ok) throw new Error(`D1 request failed (${response.status}).`);

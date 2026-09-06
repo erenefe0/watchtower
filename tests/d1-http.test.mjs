@@ -6,10 +6,10 @@ test('D1 adapter preserves parameter binding, results, changes and batches', asy
   let sent;
   const db=createD1({...config, request:async (_url,opts)=>{
     sent=JSON.parse(opts.body);
-    return Response.json({success:true,result:sent.map(()=>({success:true,results:[{n:2}],meta:{changes:1}}))});
+    return Response.json({success:true,result:sent.batch.map(()=>({success:true,results:[{n:2}],meta:{changes:1}}))});
   }});
   assert.deepEqual(await db.prepare('SELECT ? n').bind("a'b").first(),{n:2});
-  assert.deepEqual(sent,[{sql:'SELECT ? n',params:["a'b"]}]);
+  assert.deepEqual(sent.batch,[{sql:'SELECT ? n',params:["a'b"]}]);
   assert.equal((await db.prepare('UPDATE x SET y=?').bind(3).run()).meta.changes,1);
   assert.equal((await db.batch([db.prepare('SELECT 1'),db.prepare('SELECT 2')])).length,2);
 });
