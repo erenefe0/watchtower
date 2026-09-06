@@ -17,7 +17,8 @@ npm run dev
 1. `wrangler d1 create watchtower-db` ile D1 oluşturun ve dönen gerçek `database_id` değerini `wrangler.jsonc` içine yazın.
 2. `npm run db:migrate` ile şemayı uygulayın.
 3. `npm run deploy` ile uygulamayı yayımlayın.
-4. Workers & Pages altında GitHub deposunu bağlayın. Derleme komutu `npm run build`, dağıtım komutu `npx wrangler d1 migrations apply DB --remote && npx wrangler deploy` olmalı.
+4. Otomatik dağıtım için GitHub deposunun Settings → Secrets and variables → Actions alanına `CLOUDFLARE_API_TOKEN` sırrını ekleyin. Anahtar, ilgili hesap için Workers Scripts:Edit ve D1:Edit izinlerini gerektirir. Anahtarı kaynak dosyalarına yazmayın.
+5. `.github/workflows/deploy.yml`, yalnızca `main` dalında test, tip kontrolü ve derlemeden sonra D1 şemasını uygular ve Cloudflare'a yayımlar. Hesap kimliği bu dosyada tanımlıdır; farklı hesapta kurarken değiştirin. Açık depoda standart `ubuntu-latest` çalıştırıcısı kullanılır; ücretli büyük çalıştırıcı veya ek hizmet açılmaz.
 
 Dakikalık Cron tetikleyicisi kaynakların sıradaki çekim zamanını kontrol eder. RSS/GDELT için 15, GDACS için 5, USGS için 2 dakika hedeflenir. Kaynak erişimi ve hesap kotaları gecikmelere yol açabilir. Ziyaretçi olmasa da çalışması ancak gerçek Cron kaydı üretimi gözlenince doğrulanmış sayılır.
 
