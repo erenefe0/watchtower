@@ -20,7 +20,7 @@ npm run dev
 4. Otomatik dağıtım için GitHub deposunun Settings → Secrets and variables → Actions alanına `CLOUDFLARE_API_TOKEN` sırrını ekleyin. Anahtar, ilgili hesap için Workers Scripts:Edit ve D1:Edit izinlerini gerektirir. Anahtarı kaynak dosyalarına yazmayın.
 5. `.github/workflows/deploy.yml`, yalnızca `main` dalında test, tip kontrolü ve derlemeden sonra D1 şemasını uygular ve Cloudflare'a yayımlar. Hesap kimliği bu dosyada tanımlıdır; farklı hesapta kurarken değiştirin. Açık depoda standart `ubuntu-latest` çalıştırıcısı kullanılır; ücretli büyük çalıştırıcı veya ek hizmet açılmaz.
 
-Dakikalık Cron tetikleyicisi kaynakların sıradaki çekim zamanını kontrol eder. RSS/GDELT için 15, GDACS için 5, USGS için 2 dakika hedeflenir. Kaynak erişimi ve hesap kotaları gecikmelere yol açabilir. Ziyaretçi olmasa da çalışması ancak gerçek Cron kaydı üretimi gözlenince doğrulanmış sayılır.
+GitHub Actions toplama işini 5 dakikalık hedef aralıklarla çalıştırır; GitHub zamanlaması gecikebilir. RSS/GDELT için 15 dakika hedeflenir; GDACS ve USGS en erken bir sonraki toplama çalışmasında kontrol edilir. Siteye ziyaretçi gelmesi gerekmez. Son başarılı çekim kaynak durumunda gösterilir; 15 dakika güncellenmeyen toplama bağlantısı gecikmiş sayılır.
 
 ## Yönetim ve sırlar
 
@@ -38,4 +38,4 @@ Harita işçisi yayın paketine dahildir. Masaüstü/mobil boyut değişimleri i
 
 Haber içerikleri kendi yayıncılarına aittir; kaynak bağlantıları korunur. Harita OpenFreeMap, OpenMapTiles ve OpenStreetMap atıflarını gösterir. Üçüncü taraf bağımlılıkların lisansları geçerlidir. Bu depoda uygulama için ayrıca bir açık kaynak lisansı verilmemiştir.
 
-Cloudflare Free, HTTP ve Cron çağrısı başına 10 ms CPU sınırı uygular. Çok kaynaklı toplamanın bu planda kesintisiz çalışacağı garanti edilmez; canlı ölçüm veya toplama işinin ayrı bir çalıştırıcıya taşınması gerekir. Ücretli plana otomatik geçiş yapılmaz.
+Cloudflare Free üzerinde ağır RSS işleme kaynak sınırına takıldığı için toplama GitHub standart Linux çalıştırıcısında yapılır. Cloudflare yalnızca siteyi ve D1 veritabanını barındırır. Ücretli plana otomatik geçiş yapılmaz. GitHub, etkinlik olmayan açık depolardaki zamanlanmış işleri 60 gün sonra durdurabilir; Actions ekranındaki durum izlenmelidir.

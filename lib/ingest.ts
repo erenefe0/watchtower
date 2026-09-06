@@ -242,7 +242,10 @@ export async function ingestSource(s: Source) {
     'INSERT INTO runs (id,sourceId,startedAt,status) VALUES (?,?,?,?)',
     [runId, s.id, started, 'running'],
   );
-  await run('UPDATE sources SET lastAttempt=? WHERE id=?', [started, s.id]);
+  // Advance before external work so a terminated invocation cannot starve other feeds.
+  await run('UPDATE sources SET lastAttempt=?,nextFetch=? WHERE id=?', [
+    started, new Date(Date.now() + s.intervalMinutes * 60000).toISOString(), s.id,
+  ]);
   try {
     if (
       s.requires &&

@@ -1,31 +1,18 @@
+import { build } from 'esbuild';
+import { createD1 } from './d1-http.mjs';
 import { readFileSync } from 'node:fs';
-const base = process.argv[2] ?? 'http://localhost:3000';
-const local = Object.fromEntries(
-  readFileSync('.dev.vars', 'utf8')
-    .split(/\r?\n/)
-    .filter((l) => l.includes('='))
-    .map((l) => [l.slice(0, l.indexOf('=')), l.slice(l.indexOf('=') + 1)]),
-);
-const key = process.env.WATCHTOWER_INGEST_SECRET ?? local.INGEST_SECRET;
-async function collect(id) {
-  const r = await fetch(base + '/api/internal/tick', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: 'Bearer ' + key,
-    },
-    body: JSON.stringify({ sourceId: id }),
-    signal: AbortSignal.timeout(90000),
-  });
-  const result = await r.json();
-  console.log(JSON.stringify({ http: r.status, ...result }));
-  if (!r.ok) throw new Error('Collection request failed.');
-}
-await collect('bbc-tr');
-const sources = await (await fetch(base + '/api/sources')).json();
-for (const s of sources.filter(
-  (s) => s.enabled && !s.isCandidate && s.id !== 'bbc-tr',
-))
-  await collect(s.id);
-const events = await (await fetch(base + '/api/events')).json();
-console.log(JSON.stringify({ total: events.total, stats: events.stats }));
+const config = JSON.parse(readFileSync('wrangler.jsonc', 'utf8'));
+globalThis.__collectorEnv = { DB: createD1({
+  accountId: process.env.CLOUDFLARE_ACCOUNT_ID,
+  databaseId: config.d1_databases.find(d => d.binding === 'DB').database_id,
+  token: process.env.CLOUDFLARE_API_TOKEN,
+}) };
+await build({
+  entryPoints: ['scripts/collector-entry.ts'], bundle: true, platform: 'node', format: 'esm',
+  outfile: 'outputs/collector.mjs', packages: 'external',
+  plugins: [{ name: 'collector-runtime', setup(b) {
+    b.onResolve({ filter: /^cloudflare:workers$/ }, () => ({ path: 'runtime', namespace: 'collector' }));
+    b.onLoad({ filter: /.*/, namespace: 'collector' }, () => ({ contents: 'export const env = globalThis.__collectorEnv;' }));
+  } }],
+});
+await (await import('../outputs/collector.mjs')).collect();

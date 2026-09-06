@@ -145,7 +145,7 @@ export async function listEvents(
     lastSuccess: last?.lastSuccess ?? null,
     sourceCount: sourceCount?.n ?? 0,
     connections: {
-      scheduler: !!tick && Date.now() - Date.parse(tick.value) < 300000,
+      scheduler: !!tick && Date.now() - Date.parse(tick.value) < 900000,
       translation: !!(
         runtime().CLOUDFLARE_ACCOUNT_ID && runtime().CLOUDFLARE_AI_TOKEN
       ),
