@@ -50,10 +50,16 @@ export async function translateText(text: string, lang: string) {
   }
   const translated = cleanText(result.result?.translated_text, 1000);
   if (!translated) return null;
-  await run(
-    'INSERT INTO translations (id,sourceLang,original,translated,status,updatedAt) VALUES (?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET translated=excluded.translated,status=excluded.status,updatedAt=excluded.updatedAt',
-    [id, lang, text, translated, 'translated', now()],
-  );
+  await Promise.all([
+    run(
+      'INSERT INTO translations (id,sourceLang,original,translated,status,updatedAt) VALUES (?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET translated=excluded.translated,status=excluded.status,updatedAt=excluded.updatedAt',
+      [id, lang, text, translated, 'translated', now()],
+    ),
+    run(
+      'INSERT INTO state (key,value) VALUES (?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value',
+      ['translation:lastSuccess', now()],
+    ),
+  ]);
   return translated;
 }
 export async function translateBatch() {

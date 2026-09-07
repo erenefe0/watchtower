@@ -1,4 +1,4 @@
-import { all, first, run, statement, db, now, runtime } from '@/db/runtime';
+import { all, first, run, statement, db, now } from '@/db/runtime';
 import { SOURCES } from './sources';
 import {
   EMPTY_EVENTS,
@@ -101,7 +101,16 @@ export async function listEvents(
   const total = await first<{ n: number }>(`SELECT count(*) n ${w}`, f.args);
   const pages = Math.ceil((total?.n ?? 0) / 25),
     page = Math.min(f.page, Math.max(1, pages));
-  const [events, map, stats, histogram, last, sourceCount, tick] =
+  const [
+    events,
+    map,
+    stats,
+    histogram,
+    last,
+    sourceCount,
+    tick,
+    translationTick,
+  ] =
     await Promise.all([
       all<EventRecord>(
         `SELECT ${columns} ${w} ORDER BY e.sortAt DESC,e.id LIMIT 25 OFFSET ?`,
@@ -128,6 +137,9 @@ export async function listEvents(
       first<{ value: string }>('SELECT value FROM state WHERE key=?', [
         'scheduler:lastTick',
       ]),
+      first<{ value: string }>('SELECT value FROM state WHERE key=?', [
+        'translation:lastSuccess',
+      ]),
     ]);
   const publishers = await first<{ n: number }>(
     `SELECT count(DISTINCT i.publisherGroup) n FROM items i JOIN event_reports r ON r.itemId=i.id WHERE r.eventId IN (SELECT e.id ${w})`,
@@ -146,9 +158,9 @@ export async function listEvents(
     sourceCount: sourceCount?.n ?? 0,
     connections: {
       scheduler: !!tick && Date.now() - Date.parse(tick.value) < 900000,
-      translation: !!(
-        runtime().CLOUDFLARE_ACCOUNT_ID && runtime().CLOUDFLARE_AI_TOKEN
-      ),
+      translation:
+        !!translationTick &&
+        Date.now() - Date.parse(translationTick.value) < 86400000,
     },
   };
 }

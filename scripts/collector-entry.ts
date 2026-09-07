@@ -1,6 +1,7 @@
 import { all, run, now } from '../db/runtime';
 import { acquireLock, releaseLock, ensureRegistry } from '../lib/store';
 import { ingestBatch, maintenance } from '../lib/ingest';
+import { translateBatch } from '../lib/translation';
 
 export async function collect() {
   const token = await acquireLock('scheduled', 900);
@@ -14,6 +15,7 @@ export async function collect() {
       console.log(JSON.stringify(await ingestBatch()));
       await run('INSERT INTO state (key,value) VALUES (?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value', ['scheduler:lastTick', now()]);
     }
+    console.log(JSON.stringify(await translateBatch()));
     await maintenance();
     await run('INSERT INTO state (key,value) VALUES (?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value', ['scheduler:lastTick', now()]);
   } finally { await releaseLock('scheduled', token); }
