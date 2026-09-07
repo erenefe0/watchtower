@@ -20,6 +20,9 @@
   "triggers": {
     "crons": []
   },
+  "ai": {
+    "binding": "AI"
+  },
   "vars": {
     "ACCESS_TEAM_DOMAIN": "https://purple-water-c1ac.cloudflareaccess.com",
     "ACCESS_AUD": "25904f3b122e917960103b7459f699e42a5132f470969ec24349f7d0ebf4410a"

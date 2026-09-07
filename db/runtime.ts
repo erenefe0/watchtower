@@ -1,6 +1,9 @@
 import { env } from 'cloudflare:workers';
 export type RuntimeEnv = {
   DB: D1Database;
+  AI?: {
+    run(model: string, input: Record<string, string>): Promise<unknown>;
+  };
   ADMIN_USER_IDS?: string;
   ADMIN_EMAILS?: string;
   ACCESS_TEAM_DOMAIN?: string;
